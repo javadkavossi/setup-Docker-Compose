@@ -2,7 +2,17 @@ require("dotenv").config();
 const { json } = require("body-parser");
 const express = require("express")
 
+
 const app = express()
+
+const config = require("./config/key");
+
+const mongoose = require("mongoose");
+
+mongoose
+  .connect(config.mongoURI, { useNewUrlParser: true })
+  .then(() => console.log("DB connected"))
+  .catch(err => console.error(err));
 
 app.use(express.json());
 
