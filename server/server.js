@@ -2,6 +2,17 @@ require("dotenv").config();
 const { json } = require("body-parser");
 const express = require("express")
 
+const ErrorsMiddleware = require("./middleware/errorMiddleware");
+const LibraryError = require("./utils/libraryError");
+const bookRoutes = require("./routes/bookRoutes");
+
+process.on("uncaughtException", (error) => {
+    console.log("Uncaught Exception..... 💣 🔥 stopping the server....");
+    console.log(error.name, error.message);
+
+    process.exit(1);
+});
+
 
 const app = express()
 
@@ -25,9 +36,30 @@ app.get("/test", (req,res)=>{
 })
 
 
-app.listen(
+app.use("/api/v1/", bookRoutes);
+
+// Error middleware
+app.all("*", (req, res, next) => {
+    next(
+        new LibraryError(`Can't find ${req.originalUrl} on this server!`, 404)
+    );
+});
+app.use(ErrorsMiddleware);
+
+// Make the sever listen on the declared PORT variable
+const server = app.listen(
     PORT,
     console.log(
-        `server  running in ${process.env.NODE_ENV} mode on port ${PORT}`
+        `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`
     )
 );
+
+// Unhandled Rejection
+process.on("unhandledRejection", (error) => {
+    console.log("Unhandled Rejection..... 💣 🔥 stopping the server....");
+    console.log(error.name, error.message);
+    server.close(() => {
+        // exit code 1 means that there is an issue that caused the program to exit
+        process.exit(1);
+    });
+});
