@@ -2,7 +2,7 @@ services:
   library-api:
     restart: always
     build:
-      context: ./sever
+      context: ./server
       dockerfile: DockerFile.dev
     container_name: labrary_men_nginx
     volumes:
